@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/">
+        <file>dot.png</file>
+        <file>field.png</file>
+        <file>full.png</file>
+        <file>half.png</file>
+        <file>redfull.png</file>
+        <file>redhalf.png</file>
+    </qresource>
+</RCC>
