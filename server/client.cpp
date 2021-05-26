@@ -17,7 +17,7 @@ Client::Client()
 
 
 bool Client::killed_ship(int x, int y, int x1, int y1) {
-    qDebug() << x<< y;
+
     bool res = (ships[x][y] == SHIP)? false: true;
     if(!res) return res;
     if (x >=0 and y-1>=0  and y-1 != y1) {
