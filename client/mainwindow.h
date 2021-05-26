@@ -27,7 +27,8 @@ enum STATUS {
     MAKING_STEP,
     WAITNG_STEP,
     VICTORY,
-    DEFEAT
+    DEFEAT,
+    DISCONNECTED
 
 };
 class MainWindow : public QMainWindow

@@ -8,6 +8,7 @@ Image::Image()
     images.insert("redhalf", QImage("://redfull.png"));
     images.insert("redfull", QImage("://redfull.png"));
     images.insert("field", QImage("://field.png"));
+    images.insert("girl", QImage("://unnamed.jpg"));
 }
 
 QImage Image::getimage(const QString &name) {

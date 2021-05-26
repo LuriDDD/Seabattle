@@ -36,7 +36,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event) {
 //    pos.setY(rxm.captured(2).toInt());
     switch (status) {
     case START_NEW_GAME:
-        qDebug("%d, %d", event->pos().x(), event->pos().y());
         break;
     case SEARCHING_FOR_ENEMY:
         break;
@@ -94,6 +93,7 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
     painter.drawImage(0, this->menuBar()->geometry().height(), images.getimage("field"));
 
+
     for (int i =0; i < 10; i++) {
         for(int j =0; j < 10; j++) {
             if (my_field.ships[i][j] == CLEAR) continue;
@@ -112,11 +112,14 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     }
     switch (status) {
     case START_NEW_GAME:
+        ui->statuslabel->setText("Статус: Начните новую игру");
         break;
     case SEARCHING_FOR_ENEMY:
+        ui->statuslabel->setText("Статус: Идет поиск соперника");
         break;
     case PLACING_SHIPS:
     {
+        ui->statuslabel->setText("Статус: Расставляйте корабли");
         int cnt = 0;
         for (auto i = 3; i >= 0; i--) {
             if (amount_of_ships[i] + i != 4) {
@@ -133,11 +136,22 @@ void MainWindow::paintEvent(QPaintEvent *event) {
     }
         break;
     case WAITING_FOR_ENEMY:
+        ui->statuslabel->setText("Статус: Ожидание соперника");
         break;
     case MAKING_STEP:
-
+        ui->statuslabel->setText("Статус: Ваш ход");
         break;
     case WAITNG_STEP:
+        ui->statuslabel->setText("Статус: Ход соперника");
+        break;
+    case VICTORY:
+        ui->statuslabel->setText("Статус: Победа");
+        break;
+    case DEFEAT:
+        ui->statuslabel->setText("Статус: Поражение");
+        break;
+    case DISCONNECTED:
+        ui->statuslabel->setText("Статус: Соперник отключился");
         break;
     }
 //    if (enemy_field.inside(ship)) {
@@ -175,6 +189,8 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event) {
         break;
     case WAITNG_STEP:
         break;
+    case DISCONNECTED:
+        break;
     }
 }
 
@@ -188,7 +204,7 @@ void MainWindow::on_actionNew_Game_triggered()
     status = START_NEW_GAME;
     orientation = true;
     ship = QPoint();
-    server->connectToHost("192.168.1.180", 3333);
+    server->connectToHost("18.156.108.157", 3333);
     this->connect(server, SIGNAL(readyRead()), SLOT(server_read()));
     this->connect(server,SIGNAL(disconnected()), SLOT(todisconnect()));
     my_field = Field(40, 62, 255, 277);
@@ -227,10 +243,18 @@ void MainWindow::server_read() {
     pack = server->readLine();
     QRegularExpression message("(\\w+):(.*)");
     QRegularExpressionMatch remessage = message.match(pack);
+    QMessageBox msg;
     if (remessage.captured(1) == "message") {
-        QMessageBox::about(this, "Оу!", QString(remessage.captured(2)));
+    if (remessage.captured(2) == "girl") {
+        msg.setText("<img src=\":/unnamed.jpg\">");
+        msg.exec();
     }
-    qDebug() << pack;
+    if (remessage.captured(2) == "sosi") {
+        msg.setText("<img src=\":/pososi.jpg\">");
+        msg.exec();
+    }
+    return;
+    }
 //    QMessageBox::information(this, "Message", pack);
     QRegularExpression rx("server:([0-9]):([0-3]+)");
     QRegularExpressionMatch rxm = rx.match(pack);
@@ -247,13 +271,11 @@ void MainWindow::server_read() {
         for (int i = 0; i < 100; i++) {
             enemy_field.ships[i/10][i%10] = Cell(QString(rxm.captured(2)[i]).toInt());
         }
-        this->update();
         break;
     case WAITNG_STEP:
         for (int i = 0; i < 100; i++) {
             my_field.ships[i/10][i%10] = Cell(QString(rxm.captured(2)[i]).toInt());
         }
-        this->update();
         break;
     }
     status = STATUS(rxm.captured(1).toInt());
@@ -266,11 +288,13 @@ void MainWindow::server_read() {
         }
         server->close();
     }
+    this->update();
 
 }
 
 void MainWindow::todisconnect() {
     server->close();
-    QMessageBox::about(this, "Оу!", "Отключение");
+    if (status != VICTORY and status != DEFEAT)
+        status = DISCONNECTED;
 }
 
